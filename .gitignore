@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Recordings / captured frames
+*.bk2
+*.mp4
+frame_*.png
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
