@@ -12,6 +12,16 @@ frame_*.png
 # Experiment output
 data/
 
+# ROMs (do not commit game binaries)
+roms/
+*.gb
+*.gbc
+*.gba
+*.nes
+*.md
+*.sfc
+*.smc
+
 # Editor / OS
 .vscode/
 .idea/

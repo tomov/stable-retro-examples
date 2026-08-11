@@ -120,22 +120,43 @@ and register it:
 
 ```bash
 conda activate retro-play
-python add_game.py /path/to/rom.gbc --name TobuTobuGirlDX
-python interactive_play.py --game TobuTobuGirlDX-GbColor
+python add_game.py roms/tobudx.gb --name TobuTobuGirlDX
+python interactive_play.py --game TobuTobuGirlDX-GameBoy
 ```
 
 The ROM extension picks the platform (`.gb`→GameBoy, `.gbc`→GbColor, `.nes`→Nes,
-`.md`→Genesis, `.sfc`→Snes, ...). The script computes the ROM's sha1, copies it
-into the installed package's data dir, writes a minimal `data.json` /
-`metadata.json` (enough to *play*), and verifies the env can be created.
-
-> **Tobu Tobu Girl Deluxe** is free homebrew (Tangram Games) — download the
-> `.gbc` from tangramgames.itch.io, then run the two commands above.
+`.nds`→NintendoDs, `.md`→Genesis, `.sfc`→Snes, ...). The script computes the
+ROM's sha1, copies it into the installed package's data dir, writes a minimal
+`data.json` / `metadata.json` (enough to *play*), and verifies the env can be
+created (it prints the exact `--game NAME-Platform` string to use).
 
 To wire in **rewards, score/lives variables, or savestates** for RL or fMRI use,
 edit the generated `data.json` (RAM addresses → variables) and `scenario.json`
 (reward function, done condition), or use stable-retro's integration UI. Playing
 interactively needs none of that.
+
+### Free homebrew games (verified working)
+
+These are legally free, non-commercial homebrew titles. Download the ROM, drop
+it in `roms/`, then register + play. All three were smoke-tested and render
+correctly. (ROMs live in `roms/` and are git-ignored — don't commit binaries.)
+
+| Game | System | Download | Register | Play |
+| --- | --- | --- | --- | --- |
+| Tobu Tobu Girl DX | Game Boy | [tangramgames.itch.io](https://tangramgames.itch.io/tobu-tobu-girl-deluxe) | `python add_game.py roms/tobudx.gb --name TobuTobuGirlDX` | `python interactive_play.py --game TobuTobuGirlDX-GameBoy` |
+| Nomolos: Storming the CATsle | NES | [gradualgames.itch.io](https://gradualgames.itch.io/nomolos-storming-the-catsle) | `python add_game.py roms/nomolos.nes --name Nomolos` | `python interactive_play.py --game Nomolos-Nes` |
+| Anguna | Nintendo DS | [tolberts.net/anguna](http://www.tolberts.net/anguna/) | `python add_game.py roms/angunaDS/anguna.nds --name Anguna` | `python interactive_play.py --game Anguna-NintendoDs` |
+
+Get past the title screens by pressing **Enter** (START).
+
+**Anguna (DS) caveats:** the melonDS core prints a wall of boot logging
+(`PU region…`, BIOS/firmware warnings, a `bad ROM size … rounded` line) — all
+harmless; it runs on FreeBIOS since no DS BIOS is installed. stable-retro renders
+only the **top** DS screen (192×256), so Anguna's bottom-screen map/inventory
+isn't visible and touch input isn't wired up. Gameplay is on the top screen, so
+it's playable. If a true **GBA** build of Anguna is available (`anguna.gba`, a
+real GBA ROM — *not* the `.ds.gba` flashcart wrapper), it's smoother and
+single-screen.
 
 ## Gotchas
 
