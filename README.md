@@ -9,6 +9,8 @@ environments:
   into an experiment: fixed centered display, scanner-trigger gating, a
   declarative curriculum, fixation crosses / IBIs / surveys, and per-play
   logging for later analysis.
+- **`add_game.py`** — register a new ROM as a stable-retro game integration so
+  you can play games that aren't shipped with the package.
 
 ## Setup
 
@@ -109,6 +111,31 @@ python fmri_play.py --subject 01 --run 0 --save-ram   # also log full RAM per fr
   final `info`, and per-button on/off **boxcars** (ready as fMRI regressors).
 - `...npz` — per-frame arrays: `frame_ts`, `reward`, `actions` (N×12), and
   optionally `ram` (N×65536) with `--save-ram`.
+
+## add_game.py — playing games not shipped with stable-retro
+
+stable-retro only exposes games it has an *integration* for. Most titles aren't
+integrated (and ROMs aren't distributed). To play a new one you supply the ROM
+and register it:
+
+```bash
+conda activate retro-play
+python add_game.py /path/to/rom.gbc --name TobuTobuGirlDX
+python interactive_play.py --game TobuTobuGirlDX-GbColor
+```
+
+The ROM extension picks the platform (`.gb`→GameBoy, `.gbc`→GbColor, `.nes`→Nes,
+`.md`→Genesis, `.sfc`→Snes, ...). The script computes the ROM's sha1, copies it
+into the installed package's data dir, writes a minimal `data.json` /
+`metadata.json` (enough to *play*), and verifies the env can be created.
+
+> **Tobu Tobu Girl Deluxe** is free homebrew (Tangram Games) — download the
+> `.gbc` from tangramgames.itch.io, then run the two commands above.
+
+To wire in **rewards, score/lives variables, or savestates** for RL or fMRI use,
+edit the generated `data.json` (RAM addresses → variables) and `scenario.json`
+(reward function, done condition), or use stable-retro's integration UI. Playing
+interactively needs none of that.
 
 ## Gotchas
 
