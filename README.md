@@ -1,8 +1,14 @@
 # stable-retro-examples
 
 Small, hackable examples for playing with [stable-retro](https://github.com/Farama-Foundation/stable-retro)
-environments — starting with an interactive keyboard player built for
-inspection (set breakpoints, examine observations / RAM / rewards live).
+environments:
+
+- **`interactive_play.py`** — an interactive keyboard player built for
+  inspection (set breakpoints, examine observations / RAM / rewards live).
+- **`fmri_play.py`** — a generic fMRI wrapper that turns *any* stable-retro game
+  into an experiment: fixed centered display, scanner-trigger gating, a
+  declarative curriculum, fixation crosses / IBIs / surveys, and per-play
+  logging for later analysis.
 
 ## Setup
 
@@ -51,6 +57,58 @@ python interactive_play.py --list --game sonic  # search installed game names
   When a breakpoint hits, the game window freezes; `c` in pdb resumes. Run under
   `python -u interactive_play.py` for unbuffered prompt output.
 - **`keys_to_act(keys, buttons)`** — remap keyboard → console buttons.
+
+## fmri_play.py
+
+A proof-of-concept framework for running stable-retro games as an fMRI
+experiment. Uses pyglet only (no pygame/psychopy). Structure mirrors the
+existing `vgdl` (fMRI) and `mario_task` (MEG/EEG) task frameworks, stripped to
+essentials and made game-agnostic.
+
+```bash
+conda activate retro-play
+python fmri_play.py --subject 01 --run 0              # real session
+python fmri_play.py --subject 01 --run 0 --self-test  # auto-trigger + random agent (no human)
+python fmri_play.py --subject 01 --run 0 --save-ram   # also log full RAM per frame
+```
+
+### Experiment lifecycle
+
+1. Show `+`, wait for the **scanner trigger** (`=`) → capture `scan_start_ts`
+   (the anchor all timestamps are relative to).
+2. Pre-run fixation `+` (scanner settle).
+3. Walk the curriculum: **text/instruction** screens, **survey** screens, and
+   **blocks**. A block = one game; each block has **instances** (a level/state);
+   each instance replays the level from the start on every game-over until its
+   `duration` elapses (repeat-for-X-seconds). Fixation crosses fill the
+   inter-instance / inter-block intervals (IBIs).
+4. Post-run fixation `+` (HRF settle), then write `run.json`.
+
+`ESC` quits at any time (data written so far is kept).
+
+### What to edit
+
+- **`CURRICULUM`** (dict at top of file) — the whole experiment: a mapping from
+  run index to a list of `text` / `survey` / `block` items. Each block names a
+  `game`, optional `scenario`, `instructions`, and a list of `instances`
+  (`state` + `duration`). `state=None` uses the game's default start.
+- **Timing constants** — `PRERUN_FIXATION`, `POSTRUN_FIXATION`,
+  `INTER_INSTANCE_FIXATION`, `INTER_BLOCK_FIXATION`, `FPS`.
+- **Display** — `SCREEN_W/H`, `BG` (every game is aspect-preserving letterboxed
+  and centered into the one fixed window, so all systems look uniform).
+- **Input** — `TRIGGER_KEY`, `ADVANCE_KEY`, `keys_to_act()` (remap to a scanner
+  button box here).
+
+### Output (per run, under `data/sub-XX/run-YY/`)
+
+- `run.json` — coarse event timeline (trigger, fixations, blocks, plays,
+  surveys), each with a `scan_start_ts`-relative `onset`.
+- `block-BB_inst-II_play-PP.bk2` — frame-exact emulator movie (button inputs);
+  independently replayable via `retro.Movie` to reproduce the exact play.
+- `...json` — per-play metadata: game/state/scenario, frame count, total reward,
+  final `info`, and per-button on/off **boxcars** (ready as fMRI regressors).
+- `...npz` — per-frame arrays: `frame_ts`, `reward`, `actions` (N×12), and
+  optionally `ram` (N×65536) with `--save-ram`.
 
 ## Gotchas
 

@@ -9,6 +9,9 @@ venv/
 *.mp4
 frame_*.png
 
+# Experiment output
+data/
+
 # Editor / OS
 .vscode/
 .idea/
